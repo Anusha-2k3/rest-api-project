@@ -1,5 +1,5 @@
 import os
-import secrets
+import redis
 
 from flask import Flask, jsonify
 from flask_smorest import Api
@@ -8,16 +8,21 @@ from db import db
 from blocklist import BLOCKLIST
 import models
 from flask_migrate import Migrate
-
 from resources.item import blp as ItemBlueprint
 from resources.store import blp as StoreBlueprint
 from resources.tag import blp as TagBlueprint
 from resources.user import blp as UserBlueprint
+from dotenv import load_dotenv
 
+from rq import Queue
 
 def create_app(db_url=None):
     app = Flask(__name__)
-
+    load_dotenv()
+    connection = redis.from_url(
+        os.getenv('rediss://red-cvicma9r0fns738csj8g:Y9UKxgqMJYV2yqVfrrRM5vvExsKAmi2A@oregon-keyvalue.render.com:6379','rediss://red-cvicma9r0fns738csj8g:Y9UKxgqMJYV2yqVfrrRM5vvExsKAmi2A@oregon-keyvalue.render.com:6379')
+    )
+    app.queue = Queue("mails", connection=connection)
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"
